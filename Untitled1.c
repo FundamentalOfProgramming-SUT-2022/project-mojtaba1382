@@ -6,6 +6,8 @@
 int forcut = 0;
 int findforreplace[1000];
 int isundo = 0;
+char outputarman[90000];
+int witharman = 0;
 
 int forreplace = 0;
 createfile(int ldastoor, char dastoor[ldastoor]){
@@ -266,14 +268,26 @@ int cat(int ldastoor, char dastoor[ldastoor]){
         return 0;
     }
     FILE *fp2;
-    fp2 = fopen(path,"r");
     char ch;
-    while(!feof(fp2)){
-        ch = fgetc(fp2);
-        printf("%c", ch);
+    if(witharman == 0){
+        fp2 = fopen(path,"r");
+        while(!feof(fp2)){
+            ch = fgetc(fp2);
+            printf("%c", ch);
+        }
+        printf("\n");
+        fclose(fp2);
     }
-    printf("\n");
-    fclose(fp2);
+    int armancounter = 0;
+    if(witharman){
+        fp2 = fopen(path,"r");
+        while(!feof(fp2)){
+            ch = fgetc(fp2);
+            outputarman[armancounter] = ch;
+            armancounter++;
+        }
+        fclose(fp2);
+    }
     return 0;
 }
 
@@ -699,6 +713,7 @@ int mfind(int ldastoor, char dastoor[ldastoor]){
         if(forcut == 0){
             printf("File not found!\n");
         }
+
         return 0;
     }
     char mystring[ldastoor];
@@ -1551,25 +1566,68 @@ int grep(int ldastoor, char dastoor[ldastoor]){
         }
     }
     //printf("%d\n", counter4);
-
-    if(atr == 'p'){
-        for(int i = 0; i < counter3; i++){
-            printf("%s: ",name[i]);
-            printf("%s\n", outputstring[i]);
-        }
-    }
-    else if(atr == 'I'){
-        for(int i = 0; i < counter3; i++){
-            if(strcmp(name[i], name[i - 1]) != 0 || i == 0){
-                printf("%s\n", name[i]);
+    if(witharman == 0){
+        if(atr == 'p'){
+            for(int i = 0; i < counter3; i++){
+                printf("%s: ",name[i]);
+                printf("%s\n", outputstring[i]);
             }
         }
+        else if(atr == 'I'){
+            for(int i = 0; i < counter3; i++){
+                if(strcmp(name[i], name[i - 1]) != 0 || i == 0){
+                    printf("%s\n", name[i]);
+                }
+            }
+        }
+        else if(atr == 'C'){
+            printf("%d\n", counter3);
+        }
     }
-    else if(atr == 'C'){
-        printf("%d\n", counter3);
+    int armancounter = 0;
+    char result[10000];
+    for(int i = 0; i < 10000; i++){
+        result[i] = '\0';
     }
-
-
+    int counterr = 0;
+    if(witharman){
+        if(atr == 'p'){
+            for(int i = 0; i < counter3; i++){
+                for(int j = 0; j < strlen(name[i]); j++){
+                    result[counterr] = name[i][j];
+                    counterr++;
+                }
+                result[counterr] = ':';
+                counterr++;
+                result[counterr] = ' ';
+                counterr++;
+                for(int j = 0; j < strlen(outputstring[i]); j++){
+                    result[counterr] = outputstring[i][j];
+                    counterr++;
+                }
+                result[counterr] = '\n';
+                counterr++;
+            }
+        }
+        else if(atr == 'I'){
+            for(int i = 0; i < counter3; i++){
+                if(strcmp(name[i], name[i - 1]) != 0 || i == 0){
+                    for(int j = 0; j < strlen(name[i]); j++){
+                        result[counterr] = name[i][j];
+                        counterr++;
+                    }
+                    result[counterr] = '\n';
+                    counterr++;
+                }
+            }
+        }
+        else if(atr == 'C'){
+            printf("%d\n", counter3);
+        }
+    }
+    for(int i = 0; i < strlen(result); i++){
+        outputarman[i] = result[i];
+    }
     return 0;
 }
 
@@ -1995,7 +2053,7 @@ int undo(int ldastoor, char dastoor[ldastoor]){
         return 0;
     }
 
-    printf("%d\n", isundo);
+    //printf("%d\n", isundo);
     //b undo
     if(isundo == 0){
         fp = fopen(path, "r");
@@ -2069,19 +2127,54 @@ int farman(int ldastoor, char dastoor[ldastoor]){
     }
     //printf("%s\n%s\n", dastoor1, dastoor2);
     if(dastoor1[0] == 'c' && dastoor1[1] == 'a' && dastoor1[2] == 't'){
-
+        cat(strlen(dastoor1), dastoor1);
     }
     else if(dastoor1[0] == 'f' && dastoor1[1] == 'i' && dastoor1[2] == 'n' && dastoor1[3] == 'd'){
-
+        mfind(strlen(dastoor1), dastoor1);
     }
     else if(dastoor1[0] == 'g' && dastoor1[1] == 'r' && dastoor1[2] == 'e' && dastoor1[3] == 'p'){
-
+        grep(strlen(dastoor1), dastoor1);
     }
-
+    //printf("%s", outputarman);
 
 
     if(dastoor2[0] == 'i' && dastoor2[1] == 'n' && dastoor2[2] == 's' && dastoor2[3] == 'e' && dastoor2[4] == 'r' && dastoor2[5] == 't'){
-
+        char chdastoor2[strlen(dastoor2) + strlen(outputarman) + 6];
+        for(int i = 0; i < strlen(dastoor2) + strlen(outputarman) + 6; i++){
+            chdastoor2[i] = '\0';
+        }
+        int chcounter = 0;
+        int newpos = 0;
+        for(int i = 0; i < strlen(dastoor2); i++){
+            if(dastoor2[i] == '-' && dastoor2[i + 2] == 'p'){
+                newpos = i;
+                break;
+            }
+            chdastoor2[chcounter] = dastoor2[i];
+            chcounter++;
+        }
+        chdastoor2[chcounter] = '-';
+        chcounter++;
+        chdastoor2[chcounter] = '-';
+        chcounter++;
+        chdastoor2[chcounter] = 's';
+        chcounter++;
+        chdastoor2[chcounter] = 't';
+        chcounter++;
+        chdastoor2[chcounter] = 'r';
+        chcounter++;
+        chdastoor2[chcounter] = ' ';
+        chcounter++;
+        for(int i = 0; i < strlen(outputarman) - 1; i++){
+            chdastoor2[chcounter] = outputarman[i];
+            chcounter++;
+        }
+        for(int i = newpos; i < strlen(dastoor2); i++){
+            chdastoor2[chcounter] = dastoor2[i];
+            chcounter++;
+        }
+        //printf("%s", chdastoor2);
+        insertstr(strlen(chdastoor2), chdastoor2);
     }
 
 }
@@ -2090,12 +2183,26 @@ int farman(int ldastoor, char dastoor[ldastoor]){
 
 
 int main(){
-    //mkdir("root");
+    mkdir("root");
+    mkdir("attachment");
+    mkdir("attachment/copy");
+    mkdir("attachment/undo");
+    FILE *FPP;
+    FPP = fopen("attachment/copy/a.txt", "w");
+    fclose(FPP);
+    FPP = fopen("attachment/undo/a.txt", "w");
+    fclose(FPP);
+    FPP = fopen("attachment/undo/b.txt", "w");
+    fclose(FPP);
     while(1){
+        for(int i = 0; i < 90000; i++){
+            outputarman[i] = '\0';
+        }
         for(int i = 0; i < 1000; i++){
             findforreplace[i] = -1;
         }
         forcut = 0;
+        witharman = 0;
         char dastoor[100];
         int ldastoor = 0;
         for(int i = 0; i < 100; i++){
@@ -2117,6 +2224,10 @@ int main(){
         }
         if(dastoor[0] == 'c' && dastoor[1] == 'r' && dastoor[2] == 'e' && dastoor[3] == 'a' && dastoor[4] == 't' && dastoor[5] == 'e' && dastoor[6] == 'f' && dastoor[7] == 'i' && dastoor[8] == 'l' && dastoor[9] == 'e' && dastoor[10] == '-' && dastoor[11] == '-' && dastoor[12] == 'f' && dastoor[13] == 'i' && dastoor[14] == 'l' && dastoor[15] == 'e' && dastoor[16] == ' '){
             createfile(ldastoor, dastoor);
+        }
+        else if(arman){
+            witharman = 1;
+            farman(ldastoor, dastoor);
         }
         else if(dastoor[0] == 'i' && dastoor[1] == 'n' && dastoor[2] == 's' && dastoor[3] == 'e' && dastoor[4] == 'r' && dastoor[5] == 't' && dastoor[6] == 's' && dastoor[7] == 't' && dastoor[8] == 'r' && dastoor[9] == '-' && dastoor[10] == '-' && dastoor[11] == 'f' && dastoor[12] == 'i' && dastoor[13] == 'l' && dastoor[14] == 'e' && dastoor[15] == ' '){
             isundo = 0;
@@ -2162,9 +2273,6 @@ int main(){
         else if(dastoor[0] == 'u' && dastoor[1] == 'n' && dastoor[2] == 'd' && dastoor[3] == 'o' && dastoor[4] == '-' && dastoor[5] == '-' && dastoor[6] == 'f' && dastoor[7] == 'i' && dastoor[8] == 'l' && dastoor[9] == 'e' && dastoor[10] == ' '){
             undo(ldastoor, dastoor);
             isundo = 1;
-        }
-        else if(arman){
-            farman(ldastoor, dastoor);
         }
         else{
             printf("invalid input\n");
